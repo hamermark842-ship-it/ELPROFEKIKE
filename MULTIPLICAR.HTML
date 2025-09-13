@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aprendiendo con Kike - Juegos de Multiplicar</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f0f9ff; /* Azul cielo muy claro */
+            overflow-x: hidden;
+        }
+        h1, h2, h3, .nav-button {
+            font-family: 'Fredoka One', cursive;
+        }
+        /* Estilo para el botón activo en la navegación */
+        .nav-button.active {
+            background-color: #fbbf24; /* Ámbar-400 */
+            color: #1e3a8a; /* Azul-900 */
+            transform: scale(1.05);
+        }
+        /* Animación para la aparición de elementos */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* Estilos para los botones de opciones en los juegos */
+        .option-button {
+            transition: all 0.2s ease-in-out;
+        }
+        .option-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .correct-answer {
+            background-color: #4ade80 !important; /* Verde-400 */
+            color: white !important;
+            transform: scale(1.1);
+        }
+        .incorrect-answer {
+            background-color: #f87171 !important; /* Rojo-400 */
+            color: white !important;
+            opacity: 0.7;
+        }
+         /* Estilos para Pirámide Multiplicadora */
+        .pyramid-input {
+            width: 80px;
+            height: 80px;
+            text-align: center;
+            font-size: 2rem;
+            border-radius: 0.75rem;
+            border: 2px solid #93c5fd;
+            transition: all 0.3s;
+        }
+        .pyramid-input:focus {
+            border-color: #fbbf24;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.4);
+        }
+        .pyramid-base {
+            width: 80px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: bold;
+            color: #1e3a8a;
+            background-color: #e0f2fe;
+            border-radius: 0.75rem;
+        }
+        /* Estilos para Modales de Ejemplo */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .modal-overlay.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            max-width: 500px;
+            width: 90%;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+        .modal-overlay.visible .modal-content {
+            transform: scale(1);
+        }
+        .example-animation {
+            border: 2px dashed #93c5fd;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+        /* Estilos para Atrapa el Resultado */
+        .catch-game-area {
+            position: relative;
+            height: 400px;
+            background-color: #e0f2fe;
+            border-radius: 1rem;
+            overflow: hidden;
+        }
+        .falling-bubble {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            background-color: #fbbf24;
+            color: #1e3a8a;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s;
+            animation: fall linear;
+        }
+        @keyframes fall {
+            to {
+                transform: translateY(450px);
+            }
+        }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <!-- Encabezado y Navegación -->
+    <header class="bg-blue-600 text-white p-4 shadow-lg text-center">
+        <div class="container mx-auto flex items-center justify-center space-x-4">
+            <!-- Avatar de Kike -->
+            <div class="w-16 h-16 bg-amber-300 rounded-full flex items-center justify-center text-4xl shadow-md border-4 border-white">🤓</div>
+            <h1 class="text-4xl">Aprendiendo a Multiplicar</h1>
+        </div>
+    </header>
+
+    <nav class="bg-blue-700 p-2 sticky top-0 z-10 shadow-md">
+        <div class="container mx-auto flex justify-center items-center space-x-2 md:space-x-4">
+            <button id="btn-tutoriales" class="nav-button active text-white py-2 px-4 rounded-full transition-all duration-300 hover:bg-amber-400">📚 Tutoriales</button>
+            <button id="btn-juegos" class="nav-button text-white py-2 px-4 rounded-full transition-all duration-300 hover:bg-amber-400">🎮 Juegos</button>
+            <button id="btn-prueba" class="nav-button text-white py-2 px-4 rounded-full transition-all duration-300 hover:bg-amber-400">🏆 Te Ponemos a Prueba</button>
+        </div>
+    </nav>
+
+    <!-- Contenedor Principal -->
+    <main class="container mx-auto p-4 md:p-6">
+
+        <!-- Sección de Tutoriales Dinámicos -->
+        <section id="section-tutoriales" class="fade-in">
+            <h2 class="text-3xl text-blue-800 mb-4 text-center">Tutoriales de Multiplicación</h2>
+            <div class="bg-white p-6 rounded-2xl shadow-lg">
+                <h3 class="text-2xl text-amber-600 mb-4">Tablas de Multiplicar Interactivas</h3>
+                <p class="mb-4">¡Selecciona un número y mira cómo aparece su tabla de multiplicar como por arte de magia!</p>
+                <div id="tabla-selector" class="flex flex-wrap justify-center gap-2 mb-4">
+                    <!-- Botones de selección de tabla se generan aquí -->
+                </div>
+                <div id="tabla-resultado" class="bg-blue-50 p-6 rounded-lg text-center text-2xl font-bold min-h-[300px] flex items-center justify-center">
+                    <p class="text-slate-500">Selecciona una tabla para empezar.</p>
+                </div>
+            </div>
+
+            <!-- NUEVO TUTORIAL DE MULTIPLICAR CON LOS DEDOS -->
+            <div class="bg-white p-6 rounded-2xl shadow-lg mt-6">
+                <h3 class="text-2xl text-amber-600 mb-4">Truco: ¡Multiplica con tus Dedos! (Tablas del 6 al 10)</h3>
+                <p class="mb-4">¿Sabías que tus manos son una calculadora secreta? Este truco funciona para multiplicar dos números entre 6 y 10. ¡Es muy fácil!</p>
+            
+                <div class="space-y-6 text-left">
+                    <div>
+                        <h4 class="font-bold text-lg text-blue-700">Paso 1: Numera tus dedos</h4>
+                        <p>Imagina que cada dedo de tus manos tiene un número del 6 al 10, empezando por el meñique (el más pequeño).</p>
+                        <div class="text-center text-4xl my-2 p-4 bg-blue-50 rounded-lg">
+                           <p class="text-lg font-bold">Meñique=6, Anular=7, Corazón=8, Índice=9, Pulgar=10</p>
+                        </div>
+                    </div>
+            
+                    <div>
+                        <h4 class="font-bold text-lg text-blue-700">Paso 2: ¡Vamos a multiplicar 7 x 8!</h4>
+                        <p>Junta el dedo número 7 de una mano (el anular) con el dedo número 8 de la otra mano (el del corazón).</p>
+                         <div class="text-center text-4xl my-2">
+                            <p class="text-lg">Juntamos el dedo 7 con el dedo 8</p>
+                            <span class="text-6xl">✋ Muestra Dedo 7</span><span class="text-6xl"> 🤚 Muestra Dedo 8</span>
+                        </div>
+                    </div>
+            
+                    <div>
+                        <h4 class="font-bold text-lg text-blue-700">Paso 3: Cuenta las decenas</h4>
+                        <p>Cuenta los dedos que se están tocando Y todos los que están por debajo de ellos. Cada uno de estos dedos vale 10.</p>
+                        <p class="mt-2">En nuestro ejemplo (7x8), hay <strong>5 dedos</strong> en total (el 6 y 7 de una mano; el 6, 7 y 8 de la otra). ¡Eso es <strong>50</strong>!</p>
+                    </div>
+            
+                    <div>
+                        <h4 class="font-bold text-lg text-blue-700">Paso 4: Cuenta y multiplica las unidades</h4>
+                        <p>Ahora, cuenta los dedos que quedaron sueltos <strong>por arriba</strong> en cada mano.</p>
+                        <ul class="list-disc list-inside ml-4 mt-2">
+                            <li>En la mano izquierda (la del 7), quedaron <strong>3</strong> dedos arriba.</li>
+                            <li>En la mano derecha (la del 8), quedaron <strong>2</strong> dedos arriba.</li>
+                        </ul>
+                        <p class="mt-2">Multiplica esos dos números: 3 x 2 = <strong>6</strong>.</p>
+                    </div>
+            
+                     <div>
+                        <h4 class="font-bold text-lg text-blue-700">Paso 5: ¡Junta todo!</h4>
+                        <p>Suma el resultado de las decenas (Paso 3) y el de las unidades (Paso 4).</p>
+                         <p class="text-center text-3xl font-bold my-4 bg-green-100 text-green-800 p-4 rounded-lg">50 + 6 = 56</p>
+                         <p class="text-center text-2xl font-bold">¡Así que 7 x 8 = 56! ¡Ya lo tienes!</p>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- Sección de Juegos -->
+        <section id="section-juegos" class="hidden fade-in">
+            <h2 class="text-3xl text-blue-800 mb-4 text-center">¡A Jugar!</h2>
+            <div id="juegos-menu" class="space-y-10">
+
+                <!-- Nivel Fácil -->
+                <div>
+                    <h3 class="text-2xl text-green-600 mb-4 font-bold border-b-4 border-green-200 pb-2">NIVEL FÁCIL 🌱</h3>
+                    <div class="grid md:grid-cols-2 gap-6 text-center">
+                        <!-- Juego 1 -->
+                        <div class="bg-white p-6 rounded-2xl shadow-lg flex flex-col justify-between">
+                            <div>
+                                <h3 class="text-2xl text-amber-600 mb-2">🚀 Carrera Veloz</h3>
+                                <p>Responde rápido. ¿Cuántos puntos consigues en 60 segundos?</p>
+                            </div>
+                            <div class="mt-4">
+                                <button class="bg-sky-100 text-sky-700 font-semibold py-1 px-3 rounded-full text-sm" onclick="openModal('modal-carrera')">Ver Ejemplo</button>
+                                <button class="bg-green-500 text-white font-bold py-2 px-6 rounded-full mt-2 w-full hover:bg-green-600" onclick="iniciarJuegoMultiplicar()">Jugar</button>
+                            </div>
+                        </div>
+                        <!-- Juego 4 (Nuevo) -->
+                         <div class="bg-white p-6 rounded-2xl shadow-lg flex flex-col justify-between">
+                            <div>
+                                <h3 class="text-2xl text-amber-600 mb-2">💧 Atrapa el Resultado</h3>
+                                <p>¡Van cayendo burbujas! Atrapa solo las que tengan el resultado correcto.</p>
+                            </div>
+                            <div class="mt-4">
+                                <button class="bg-sky-100 text-sky-700 font-semibold py-1 px-3 rounded-full text-sm" onclick="openModal('modal-atrapa')">Ver Ejemplo</button>
+                                <button class="bg-green-500 text-white font-bold py-2 px-6 rounded-full mt-2 w-full hover:bg-green-600" onclick="iniciarJuegoAtrapa()">Jugar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Nivel Medio -->
+                <div>
+                    <h3 class="text-2xl text-yellow-600 mb-4 font-bold border-b-4 border-yellow-200 pb-2">NIVEL MEDIO ✨</h3>
+                    <div class="grid md:grid-cols-2 gap-6 text-center">
+                         <!-- Juego 3 -->
+                         <div class="bg-white p-6 rounded-2xl shadow-lg flex flex-col justify-between">
+                            <div>
+                                <h3 class="text-2xl text-amber-600 mb-2">🎯 Duelo de Resultados</h3>
+                                <p>Encuentra todas las operaciones que den el mismo resultado.</p>
+                            </div>
+                            <div class="mt-4">
+                                <button class="bg-sky-100 text-sky-700 font-semibold py-1 px-3 rounded-full text-sm" onclick="openModal('modal-duelo')">Ver Ejemplo</button>
+                                <button class="bg-green-500 text-white font-bold py-2 px-6 rounded-full mt-2 w-full hover:bg-green-600" onclick="iniciarJuegoDuelo()">Jugar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Nivel Avanzado -->
+                <div>
+                    <h3 class="text-2xl text-red-600 mb-4 font-bold border-b-4 border-red-200 pb-2">NIVEL AVANZADO 🔥</h3>
+                    <div class="grid md:grid-cols-2 gap-6 text-center">
+                        <!-- Juego 2 -->
+                         <div class="bg-white p-6 rounded-2xl shadow-lg flex flex-col justify-between">
+                             <div>
+                                <h3 class="text-2xl text-amber-600 mb-2">🔺 Pirámide Misteriosa</h3>
+                                <p>Calcula y completa los bloques para resolver la pirámide.</p>
+                             </div>
+                             <div class="mt-4">
+                                <button class="bg-sky-100 text-sky-700 font-semibold py-1 px-3 rounded-full text-sm" onclick="openModal('modal-piramide')">Ver Ejemplo</button>
+                                <button class="bg-green-500 text-white font-bold py-2 px-6 rounded-full mt-2 w-full hover:bg-green-600" onclick="iniciarJuegoPiramide()">Jugar</button>
+                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="juego-container" class="hidden bg-white p-6 rounded-2xl shadow-lg text-center mt-6">
+                <!-- Los juegos se renderizan aquí -->
+            </div>
+        </section>
+
+        <!-- Sección Te Ponemos a Prueba -->
+        <section id="section-prueba" class="hidden fade-in">
+            <h2 class="text-3xl text-blue-800 mb-4 text-center">Te Ponemos a Prueba</h2>
+            <div id="prueba-config" class="bg-white p-6 rounded-2xl shadow-lg text-center">
+                 <h3 class="text-2xl text-amber-600 mb-4">Examen de Multiplicaciones</h3>
+                 <p class="mb-4">Demuestra que eres un maestro de las tablas. ¡Selecciona qué tablas quieres practicar y prepárate!</p>
+                 <div class="mb-4">
+                     <label for="tabla-prueba-select" class="font-bold">Elige la tabla:</label>
+                     <select id="tabla-prueba-select" class="mt-2 p-2 rounded-lg border-2 border-blue-200">
+                         <!-- Opciones de examen generadas aquí -->
+                     </select>
+                 </div>
+                 <button onclick="iniciarPrueba()" class="bg-green-500 text-white font-bold py-3 px-8 rounded-full text-xl hover:bg-green-600 transition-colors">¡Comenzar Prueba!</button>
+            </div>
+            <div id="prueba-container" class="hidden bg-white p-6 rounded-2xl shadow-lg text-center">
+                <!-- La prueba se renderiza aquí -->
+            </div>
+        </section>
+
+    </main>
+    
+    <!-- MODALES DE EJEMPLO -->
+    <!-- Modal Carrera Veloz -->
+    <div id="modal-carrera" class="modal-overlay" onclick="closeModal('modal-carrera')">
+        <div class="modal-content text-center" onclick="event.stopPropagation()">
+            <h3 class="text-2xl text-amber-600 mb-2">🚀 Ejemplo: Carrera Veloz</h3>
+            <p>Aparecerá una multiplicación. ¡Haz clic en la respuesta correcta lo más rápido que puedas para ganar puntos!</p>
+            <div class="example-animation">
+                <p class="text-4xl font-bold text-blue-800 mb-4">7 x 5 = ?</p>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-amber-400 text-blue-900 font-bold p-4 rounded-lg text-2xl">25</div>
+                    <div class="bg-amber-400 text-blue-900 font-bold p-4 rounded-lg text-2xl correct-answer">35</div>
+                    <div class="bg-amber-400 text-blue-900 font-bold p-4 rounded-lg text-2xl">40</div>
+                    <div class="bg-amber-400 text-blue-900 font-bold p-4 rounded-lg text-2xl">30</div>
+                </div>
+            </div>
+            <button class="mt-6 bg-blue-500 text-white font-bold py-2 px-6 rounded-full hover:bg-blue-600" onclick="closeModal('modal-carrera')">¡Entendido!</button>
+        </div>
+    </div>
+
+    <!-- Modal Pirámide -->
+    <div id="modal-piramide" class="modal-overlay" onclick="closeModal('modal-piramide')">
+        <div class="modal-content text-center" onclick="event.stopPropagation()">
+            <h3 class="text-2xl text-amber-600 mb-2">🔺 Ejemplo: Pirámide Misteriosa</h3>
+            <p>El valor de cada bloque es la multiplicación de los dos bloques de abajo. ¡Completa los vacíos!</p>
+            <div class="example-animation flex flex-col items-center gap-2">
+                 <div class="flex justify-center">
+                    <div class="pyramid-base bg-green-200 text-green-800">72</div>
+                </div>
+                <div class="flex justify-center gap-2">
+                    <div class="pyramid-base bg-sky-200 text-sky-800">6</div>
+                    <div class="pyramid-base bg-sky-200 text-sky-800">12</div>
+                </div>
+                <div class="flex justify-center gap-2">
+                    <div class="pyramid-base">2</div>
+                    <div class="pyramid-base">3</div>
+                    <div class="pyramid-base">4</div>
+                </div>
+                <p class="mt-2 text-sm text-slate-500">Porque 2x3=6, 3x4=12 y 6x12=72</p>
+            </div>
+            <button class="mt-6 bg-blue-500 text-white font-bold py-2 px-6 rounded-full hover:bg-blue-600" onclick="closeModal('modal-piramide')">¡Entendido!</button>
+        </div>
+    </div>
+
+    <!-- Modal Duelo -->
+    <div id="modal-duelo" class="modal-overlay" onclick="closeModal('modal-duelo')">
+        <div class="modal-content text-center" onclick="event.stopPropagation()">
+            <h3 class="text-2xl text-amber-600 mb-2">🎯 Ejemplo: Duelo de Resultados</h3>
+            <p>Busca y selecciona todas las operaciones que den como resultado el número objetivo.</p>
+             <div class="example-animation">
+                <p class="text-2xl mb-4">Objetivo: <span class="font-bold text-blue-800 text-3xl">24</span></p>
+                <div class="grid grid-cols-3 gap-2">
+                    <div class="bg-sky-200 p-2 rounded-lg correct-answer">3 x 8</div>
+                    <div class="bg-sky-200 p-2 rounded-lg">5 x 5</div>
+                    <div class="bg-sky-200 p-2 rounded-lg correct-answer">4 x 6</div>
+                    <div class="bg-sky-200 p-2 rounded-lg">7 x 3</div>
+                    <div class="bg-sky-200 p-2 rounded-lg correct-answer">12 x 2</div>
+                    <div class="bg-sky-200 p-2 rounded-lg">6 x 3</div>
+                </div>
+            </div>
+            <button class="mt-6 bg-blue-500 text-white font-bold py-2 px-6 rounded-full hover:bg-blue-600" onclick="closeModal('modal-duelo')">¡Entendido!</button>
+        </div>
+    </div>
+    
+    <!-- Modal Atrapa -->
+    <div id="modal-atrapa" class="modal-overlay" onclick="closeModal('modal-atrapa')">
+        <div class="modal-content text-center" onclick="event.stopPropagation()">
+            <h3 class="text-2xl text-amber-600 mb-2">💧 Ejemplo: Atrapa el Resultado</h3>
+            <p>Mira la multiplicación de arriba y haz clic en la burbuja que cae con el resultado correcto. ¡Evita las incorrectas!</p>
+             <div class="example-animation">
+                <p class="text-3xl font-bold text-blue-800 mb-4">6 x 4 = 24</p>
+                <div class="relative h-24 flex justify-around items-end">
+                    <div class="w-16 h-16 bg-amber-300 rounded-full flex items-center justify-center font-bold text-xl">18</div>
+                    <div class="w-16 h-16 bg-amber-300 rounded-full flex items-center justify-center font-bold text-xl correct-answer">24</div>
+                    <div class="w-16 h-16 bg-amber-300 rounded-full flex items-center justify-center font-bold text-xl">30</div>
+                </div>
+            </div>
+            <button class="mt-6 bg-blue-500 text-white font-bold py-2 px-6 rounded-full hover:bg-blue-600" onclick="closeModal('modal-atrapa')">¡Entendido!</button>
+        </div>
+    </div>
+
+    <script>
+        // Lógica de navegación entre secciones
+        const sections = {
+            tutoriales: document.getElementById('section-tutoriales'),
+            juegos: document.getElementById('section-juegos'),
+            prueba: document.getElementById('section-prueba')
+        };
+        const navButtons = {
+            tutoriales: document.getElementById('btn-tutoriales'),
+            juegos: document.getElementById('btn-juegos'),
+            prueba: document.getElementById('btn-prueba')
+        };
+
+        function showSection(sectionName) {
+            Object.values(sections).forEach(section => section.classList.add('hidden'));
+            Object.values(navButtons).forEach(button => button.classList.remove('active'));
+            sections[sectionName].classList.remove('hidden');
+            navButtons[sectionName].classList.add('active');
+        }
+
+        navButtons.tutoriales.addEventListener('click', () => showSection('tutoriales'));
+        navButtons.juegos.addEventListener('click', () => showSection('juegos'));
+        navButtons.prueba.addEventListener('click', () => showSection('prueba'));
+        
+        // --- Lógica de Sonidos ---
+        let audioCtx;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playSound(type) {
+            if (!audioCtx || audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            if (!audioCtx) return;
+
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+            gainNode.gain.linearRampToValueAtTime(0.4, audioCtx.currentTime + 0.01);
+
+            if (type === 'correct') {
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(523.25, audioCtx.currentTime); 
+                oscillator.frequency.linearRampToValueAtTime(698.46, audioCtx.currentTime + 0.1); 
+            } else if (type === 'incorrect') {
+                oscillator.type = 'sawtooth';
+                oscillator.frequency.setValueAtTime(200, audioCtx.currentTime);
+            } else if (type === 'win') {
+                oscillator.type = 'triangle';
+                oscillator.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+                oscillator.start(audioCtx.currentTime); // FIX: Start before scheduling stop
+                gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.5);
+                oscillator.stop(audioCtx.currentTime + 0.5);
+                return;
+            }
+
+            oscillator.start(audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.25);
+            oscillator.stop(audioCtx.currentTime + 0.25);
+        }
+        
+        // --- Lógica de Modales ---
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.add('visible');
+            }
+        }
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.remove('visible');
+            }
+        }
+
+        // --- Lógica para Tutoriales Dinámicos ---
+        const tablaSelector = document.getElementById('tabla-selector');
+        const tablaResultado = document.getElementById('tabla-resultado');
+
+        for (let i = 1; i <= 12; i++) {
+            const button = document.createElement('button');
+            button.className = 'bg-blue-500 text-white w-12 h-12 rounded-lg font-bold text-xl hover:bg-blue-600 transition-colors';
+            button.textContent = i;
+            button.onclick = () => mostrarTabla(i);
+            tablaSelector.appendChild(button);
+        }
+
+        function mostrarTabla(num) {
+            tablaResultado.innerHTML = '';
+            const lista = document.createElement('ul');
+            lista.className = 'space-y-2';
+            for (let i = 1; i <= 10; i++) {
+                const item = document.createElement('li');
+                item.className = 'fade-in';
+                item.style.animationDelay = `${i * 50}ms`;
+                item.textContent = `${num} x ${i} = ${num * i}`;
+                lista.appendChild(item);
+            }
+            tablaResultado.appendChild(lista);
+        }
+        
+        const juegosMenu = document.getElementById('juegos-menu');
+        const juegoContainer = document.getElementById('juego-container');
+        
+        function volverAlMenu() {
+            juegoContainer.classList.add('hidden');
+            juegosMenu.classList.remove('hidden');
+            juegoContainer.innerHTML = ''; // Limpiar contenedor
+        }
+        
+        // --- Lógica Juego 1: Carrera de Multiplicaciones ---
+        let score = 0;
+        let timer;
+        let timeLeft = 60;
+        
+        function iniciarJuegoMultiplicar() {
+            initAudio();
+            juegosMenu.classList.add('hidden');
+            juegoContainer.classList.remove('hidden');
+            score = 0;
+            timeLeft = 60;
+            siguientePreguntaJuego();
+            timer = setInterval(actualizarTimerJuego, 1000);
+        }
+
+        function actualizarTimerJuego() {
+            timeLeft--;
+            if (document.getElementById('timer-juego')) {
+                document.getElementById('timer-juego').textContent = `Tiempo: ${timeLeft}s`;
+            }
+            if (timeLeft <= 0) {
+                finalizarJuego();
+            }
+        }
+        function siguientePreguntaJuego() {
+            const num1 = Math.floor(Math.random() * 10) + 1;
+            const num2 = Math.floor(Math.random() * 10) + 1;
+            const respuestaCorrecta = num1 * num2;
+            let opciones = [respuestaCorrecta];
+            while (opciones.length < 4) {
+                const opcionFalsa = Math.floor(Math.random() * 100) + 1;
+                if (!opciones.includes(opcionFalsa)) opciones.push(opcionFalsa);
+            }
+            opciones.sort(() => Math.random() - 0.5);
+            juegoContainer.innerHTML = `
+                <div class="flex justify-between items-center mb-4 text-xl">
+                    <div id="score-juego" class="font-bold text-green-600">Puntos: ${score}</div>
+                    <div class="font-bold text-blue-800 text-3xl">🚀 Carrera Veloz</div>
+                    <div id="timer-juego" class="font-bold text-red-500">Tiempo: ${timeLeft}s</div>
+                </div>
+                <div class="bg-blue-100 p-8 rounded-lg mb-6"><p class="text-5xl font-bold text-blue-800">${num1} x ${num2}</p></div>
+                <div class="grid grid-cols-2 gap-4">
+                    ${opciones.map(op => `<button class="option-button bg-amber-400 text-blue-900 font-bold p-6 rounded-lg text-3xl" onclick="verificarRespuestaJuego(${op}, ${respuestaCorrecta}, this)">${op}</button>`).join('')}
+                </div>`;
+        }
+        function verificarRespuestaJuego(seleccion, correcta, elemento) {
+            const botones = juegoContainer.querySelectorAll('.option-button');
+            botones.forEach(btn => btn.disabled = true);
+            if (seleccion === correcta) {
+                playSound('correct');
+                score++;
+                elemento.classList.add('correct-answer');
+                if(document.getElementById('score-juego')) document.getElementById('score-juego').textContent = `Puntos: ${score}`;
+            } else {
+                playSound('incorrect');
+                elemento.classList.add('incorrect-answer');
+                botones.forEach(btn => { if (parseInt(btn.textContent) === correcta) btn.classList.add('correct-answer'); });
+            }
+            setTimeout(siguientePreguntaJuego, 1000);
+        }
+        function finalizarJuego() {
+            clearInterval(timer);
+            playSound('win');
+            juegoContainer.innerHTML = `
+                <h3 class="text-3xl text-amber-600 mb-4">¡Tiempo!</h3>
+                <p class="text-xl mb-6">Conseguiste un total de <span class="font-bold text-4xl text-green-600">${score}</span> puntos.</p>
+                <button onclick="volverAlMenu()" class="bg-blue-500 text-white font-bold py-3 px-6 rounded-full text-lg hover:bg-blue-600">Volver al Menú</button>`;
+        }
+        
+        // --- Lógica Juego 2: Pirámide Multiplicadora ---
+        function iniciarJuegoPiramide() {
+            initAudio();
+            juegosMenu.classList.add('hidden');
+            juegoContainer.classList.remove('hidden');
+            generarPiramide();
+        }
+        function generarPiramide() {
+            const base1 = Math.floor(Math.random() * 9) + 2; // Números del 2 al 10
+            const base2 = Math.floor(Math.random() * 9) + 2;
+            const base3 = Math.floor(Math.random() * 9) + 2;
+            juegoContainer.innerHTML = `
+                <h3 class="text-3xl text-amber-600 mb-4">🔺 Pirámide Misteriosa</h3>
+                <p class="mb-6">Cada bloque es el resultado de multiplicar los dos bloques que tiene justo debajo. ¡Complétala!</p>
+                <div id="pyramid-game" class="flex flex-col items-center gap-2">
+                    <div class="flex justify-center">
+                        <input type="number" class="pyramid-input" data-correct="${(base1*base2)*(base2*base3)}">
+                    </div>
+                    <div class="flex justify-center gap-2">
+                        <input type="number" class="pyramid-input" data-correct="${base1*base2}">
+                        <input type="number" class="pyramid-input" data-correct="${base2*base3}">
+                    </div>
+                    <div class="flex justify-center gap-2">
+                        <div class="pyramid-base">${base1}</div>
+                        <div class="pyramid-base">${base2}</div>
+                        <div class="pyramid-base">${base3}</div>
+                    </div>
+                </div>
+                <div id="feedback-piramide" class="mt-4 h-6 font-bold"></div>
+                <div class="mt-6">
+                    <button onclick="verificarPiramide()" class="bg-green-500 text-white font-bold py-2 px-6 rounded-full text-lg hover:bg-green-600">Verificar</button>
+                    <button onclick="generarPiramide()" class="bg-amber-500 text-white font-bold py-2 px-6 rounded-full text-lg hover:bg-amber-600 ml-4">Otra Pirámide</button>
+                    <button onclick="volverAlMenu()" class="bg-blue-500 text-white font-bold py-2 px-6 rounded-full text-lg hover:bg-blue-600 ml-4">Volver</button>
+                </div>
+            `;
+        }
+        function verificarPiramide() {
+            const inputs = juegoContainer.querySelectorAll('.pyramid-input');
+            let todasCorrectas = true;
+            inputs.forEach(input => {
+                const valorCorrecto = parseInt(input.dataset.correct);
+                if (parseInt(input.value) === valorCorrecto) {
+                    input.style.borderColor = '#4ade80'; // Verde
+                } else {
+                    input.style.borderColor = '#f87171'; // Rojo
+                    todasCorrectas = false;
+                }
+            });
+            const feedback = document.getElementById('feedback-piramide');
+            if (todasCorrectas) {
+                playSound('win');
+                feedback.textContent = "¡Felicidades! ¡Resolviste la pirámide! 🎉";
+                feedback.className = "mt-4 h-6 font-bold text-green-600";
+            } else {
+                playSound('incorrect');
+                feedback.textContent = "Algunos bloques no son correctos. ¡Inténtalo de nuevo!";
+                feedback.className = "mt-4 h-6 font-bold text-red-500";
+            }
+        }
+        
+        // --- Lógica Juego 3: Duelo de Resultados ---
+        let objetivoDuelo, correctasDuelo;
+        function iniciarJuegoDuelo() {
+            initAudio();
+            juegosMenu.classList.add('hidden');
+            juegoContainer.classList.remove('hidden');
+            generarDuelo();
+        }
+        function generarDuelo(){
+            const posiblesObjetivos = [12, 16, 18, 20, 24, 30, 36, 40, 48, 50, 60, 72];
+            objetivoDuelo = posiblesObjetivos[Math.floor(Math.random() * posiblesObjetivos.length)];
+            let opciones = [];
+            correctasDuelo = 0;
+            const factores = new Set();
+            for(let i = 1; i <= 12; i++){
+                if(objetivoDuelo % i === 0 && (objetivoDuelo / i) <= 12){
+                    const factorPar = [i, objetivoDuelo/i].sort((a,b) => a-b);
+                    factores.add(JSON.stringify(factorPar));
+                }
+            }
+            factores.forEach(par => {
+                const [f1, f2] = JSON.parse(par);
+                opciones.push({text: `${f1} x ${f2}`, correct: true});
+            });
+            correctasDuelo = opciones.length;
+            while(opciones.length < 12){
+                const n1 = Math.floor(Math.random() * 12) + 1;
+                const n2 = Math.floor(Math.random() * 12) + 1;
+                if(n1 * n2 !== objetivoDuelo) opciones.push({text: `${n1} x ${n2}`, correct: false});
+            }
+            opciones.sort(() => Math.random() - 0.5);
+            juegoContainer.innerHTML = `
+                <h3 class="text-3xl text-amber-600 mb-2">🎯 Duelo de Resultados</h3>
+                <p class="text-2xl mb-4">El resultado a encontrar es: <span class="font-bold text-blue-800 text-3xl">${objetivoDuelo}</span></p>
+                <p class="mb-4" id="contador-duelo">Encuentra las <span class="font-bold">${correctasDuelo}</span> operaciones correctas.</p>
+                <div id="opciones-duelo" class="grid grid-cols-3 md:grid-cols-4 gap-4">
+                    ${opciones.map(op => `<button class="option-button bg-sky-200 text-sky-800 font-bold p-4 rounded-lg text-xl" onclick="verificarSeleccionDuelo(this, ${op.correct})">${op.text}</button>`).join('')}
+                </div>
+                 <div class="mt-6">
+                     <button onclick="volverAlMenu()" class="bg-blue-500 text-white font-bold py-2 px-6 rounded-full text-lg hover:bg-blue-600 ml-4">Volver al Menú</button>
+                 </div>
+            `;
+        }
+        function verificarSeleccionDuelo(elemento, esCorrecta){
+            elemento.disabled = true;
+            if(esCorrecta){
+                playSound('correct');
+                elemento.classList.add('correct-answer');
+                correctasDuelo--;
+            } else {
+                playSound('incorrect');
+                elemento.classList.add('incorrect-answer');
+            }
+            const contadorEl = document.getElementById('contador-duelo');
+            if(correctasDuelo > 0){
+                 contadorEl.innerHTML = `¡Te quedan <span class="font-bold">${correctasDuelo}</span> operaciones por encontrar!`;
+            } else {
+                 playSound('win');
+                 contadorEl.innerHTML = `<span class="font-bold text-green-600 text-2xl">¡Lo lograste! ¡Encontraste todas! 🎉</span>`;
+            }
+        }
+        
+        // --- Lógica Juego 4: Atrapa el Resultado ---
+        let atrapaScore, atrapaTimer, atrapaTimeLeft, bubbleInterval, correctAnswerAtrapa;
+
+        function iniciarJuegoAtrapa() {
+            initAudio();
+            juegosMenu.classList.add('hidden');
+            juegoContainer.classList.remove('hidden');
+            atrapaScore = 0;
+            atrapaTimeLeft = 60;
+
+            juegoContainer.innerHTML = `
+                <div class="flex justify-between items-center mb-4 text-xl">
+                    <div id="atrapa-score" class="font-bold text-green-600">Puntos: 0</div>
+                    <div id="atrapa-question" class="font-bold text-blue-800 text-3xl"></div>
+                    <div id="atrapa-timer" class="font-bold text-red-500">Tiempo: ${atrapaTimeLeft}s</div>
+                </div>
+                <div id="catch-game-area" class="catch-game-area"></div>
+                <button onclick="volverAlMenuAtrapa()" class="mt-4 bg-blue-500 text-white font-bold py-2 px-6 rounded-full text-lg hover:bg-blue-600">Volver al Menú</button>
+            `;
+
+            atrapaTimer = setInterval(actualizarTimerAtrapa, 1000);
+            bubbleInterval = setInterval(crearBurbuja, 1800); // Hacemos que las burbujas aparezcan más lento
+            siguientePreguntaAtrapa();
+        }
+
+        function actualizarTimerAtrapa() {
+            atrapaTimeLeft--;
+            if(document.getElementById('atrapa-timer')) document.getElementById('atrapa-timer').textContent = `Tiempo: ${atrapaTimeLeft}s`;
+            if (atrapaTimeLeft <= 0) {
+                finalizarJuegoAtrapa();
+            }
+        }
+        
+        function siguientePreguntaAtrapa() {
+            const num1 = Math.floor(Math.random() * 10) + 1;
+            const num2 = Math.floor(Math.random() * 10) + 1;
+            correctAnswerAtrapa = num1 * num2;
+            if(document.getElementById('atrapa-question')) document.getElementById('atrapa-question').textContent = `${num1} x ${num2} = ?`;
+        }
+
+        function crearBurbuja() {
+            const gameArea = document.getElementById('catch-game-area');
+            if (!gameArea) return;
+
+            const bubble = document.createElement('div');
+            bubble.className = 'falling-bubble';
+            
+            const esCorrecta = Math.random() > 0.6; // 40% de probabilidad de ser la respuesta correcta
+            const valor = esCorrecta ? correctAnswerAtrapa : Math.floor(Math.random() * 100) + 1;
+            bubble.textContent = valor;
+            bubble.dataset.correct = esCorrecta;
+
+            const duration = Math.random() * 3 + 5; // Duración de caída más lenta: entre 5 y 8 segundos
+            bubble.style.animationDuration = `${duration}s`;
+            bubble.style.left = `${Math.random() * (gameArea.clientWidth - 80)}px`;
+
+            bubble.addEventListener('click', () => {
+                if (bubble.dataset.correct === 'true') {
+                    playSound('correct');
+                    atrapaScore += 10;
+                    bubble.style.backgroundColor = '#4ade80';
+                    bubble.style.transform = 'scale(1.2)';
+                    siguientePreguntaAtrapa(); // Cambia la pregunta al acertar
+                } else {
+                    playSound('incorrect');
+                    atrapaScore -= 5;
+                    bubble.style.backgroundColor = '#f87171';
+                }
+                if(document.getElementById('atrapa-score')) document.getElementById('atrapa-score').textContent = `Puntos: ${atrapaScore}`;
+                bubble.remove();
+            });
+
+            // Eliminar la burbuja cuando la animación termina
+            bubble.addEventListener('animationend', () => bubble.remove());
+
+            gameArea.appendChild(bubble);
+        }
+
+        function finalizarJuegoAtrapa() {
+            clearInterval(atrapaTimer);
+            clearInterval(bubbleInterval);
+            playSound('win');
+            juegoContainer.innerHTML = `
+                <h3 class="text-3xl text-amber-600 mb-4">¡Se acabó el tiempo!</h3>
+                <p class="text-xl mb-6">Tu puntuación final es <span class="font-bold text-4xl text-green-600">${atrapaScore}</span> puntos.</p>
+                <button onclick="volverAlMenuAtrapa()" class="bg-blue-500 text-white font-bold py-3 px-6 rounded-full text-lg hover:bg-blue-600">Volver al Menú</button>
+            `;
+        }
+
+        function volverAlMenuAtrapa() {
+            clearInterval(atrapaTimer);
+            clearInterval(bubbleInterval);
+            volverAlMenu();
+        }
+
+        // --- Lógica para "Te Ponemos a Prueba" ---
+        const pruebaConfig = document.getElementById('prueba-config');
+        const pruebaContainer = document.getElementById('prueba-container');
+        const tablaPruebaSelect = document.getElementById('tabla-prueba-select');
+        let preguntasPrueba = [];
+        let preguntaActualIndex = 0;
+        let respuestasCorrectasPrueba = 0;
+        
+        // Llenar selector de prueba
+        for (let i = 1; i <= 12; i++) {
+            const option = document.createElement('option');
+            option.value = i;
+            option.textContent = `Tabla del ${i}`;
+            tablaPruebaSelect.appendChild(option);
+        }
+        const optionTodas = document.createElement('option');
+        optionTodas.value = 'todas';
+        optionTodas.textContent = 'Todas las tablas';
+        tablaPruebaSelect.appendChild(optionTodas);
+        
+        function iniciarPrueba() {
+            initAudio(); 
+            pruebaConfig.classList.add('hidden');
+            pruebaContainer.classList.remove('hidden');
+            
+            const tablaSeleccionada = tablaPruebaSelect.value;
+            preguntaActualIndex = 0;
+            respuestasCorrectasPrueba = 0;
+            generarPreguntasPrueba(tablaSeleccionada);
+            mostrarPreguntaPrueba();
+        }
+
+        function generarPreguntasPrueba(tabla) {
+            preguntasPrueba = [];
+            for (let i = 0; i < 10; i++) {
+                const num1 = (tabla === 'todas') ? Math.floor(Math.random() * 12) + 1 : parseInt(tabla);
+                const num2 = Math.floor(Math.random() * 10) + 1;
+                const respuesta = num1 * num2;
+                preguntasPrueba.push({ num1, num2, respuesta });
+            }
+        }
+        
+        function mostrarPreguntaPrueba() {
+            if (preguntaActualIndex >= preguntasPrueba.length) {
+                finalizarPrueba();
+                return;
+            }
+            
+            const pregunta = preguntasPrueba[preguntaActualIndex];
+            pruebaContainer.innerHTML = `
+                <div class="mb-4 text-xl font-bold">Pregunta ${preguntaActualIndex + 1} de ${preguntasPrueba.length}</div>
+                <div class="bg-blue-100 p-8 rounded-lg mb-6">
+                    <p class="text-5xl font-bold text-blue-800">${pregunta.num1} x ${pregunta.num2}</p>
+                </div>
+                <div class="flex justify-center items-center gap-4">
+                     <input type="number" id="respuesta-prueba-input" class="text-center text-3xl p-4 w-48 rounded-lg border-2 border-blue-300 focus:border-amber-500 focus:ring-amber-500">
+                     <button onclick="verificarRespuestaPrueba()" class="bg-green-500 text-white font-bold py-4 px-8 rounded-lg text-2xl hover:bg-green-600">OK</button>
+                </div>
+                <p id="feedback-prueba" class="mt-4 h-6"></p>
+            `;
+            document.getElementById('respuesta-prueba-input').focus();
+        }
+
+        function verificarRespuestaPrueba() {
+            const input = document.getElementById('respuesta-prueba-input');
+            if (input.value === "") return;
+            const respuestaUsuario = parseInt(input.value);
+            const respuestaCorrecta = preguntasPrueba[preguntaActualIndex].respuesta;
+            const feedback = document.getElementById('feedback-prueba');
+
+            if (respuestaUsuario === respuestaCorrecta) {
+                playSound('correct');
+                respuestasCorrectasPrueba++;
+                feedback.textContent = "¡Correcto! ✅";
+                feedback.className = "mt-4 h-6 text-green-600 font-bold";
+            } else {
+                playSound('incorrect');
+                feedback.textContent = `Incorrecto. La respuesta era ${respuestaCorrecta} ❌`;
+                feedback.className = "mt-4 h-6 text-red-500 font-bold";
+            }
+
+            preguntaActualIndex++;
+            setTimeout(mostrarPreguntaPrueba, 1500);
+        }
+        
+        function finalizarPrueba() {
+            let mensaje = "";
+            if (respuestasCorrectasPrueba === 10) {
+                mensaje = "¡Excelente! 🥳 ¡Eres un maestro de las multiplicaciones!";
+            } else if (respuestasCorrectasPrueba >= 7) {
+                mensaje = "¡Muy bien! 👍 Sigue practicando un poco más.";
+            } else {
+                mensaje = "¡Puedes mejorar! 💪 ¡No te rindas y vuelve a intentarlo!";
+            }
+            
+            pruebaContainer.innerHTML = `
+                <h3 class="text-3xl text-amber-600 mb-4">¡Prueba Terminada!</h3>
+                <p class="text-2xl mb-2">Acertaste</p>
+                <p class="text-6xl font-bold text-blue-800 mb-4">${respuestasCorrectasPrueba} de 10</p>
+                <p class="text-xl mb-6">${mensaje}</p>
+                <button onclick="reiniciarPrueba()" class="bg-blue-500 text-white font-bold py-3 px-6 rounded-full text-lg hover:bg-blue-600">Volver a Intentar</button>
+            `;
+        }
+        
+        function reiniciarPrueba() {
+            pruebaConfig.classList.remove('hidden');
+            pruebaContainer.classList.add('hidden');
+        }
+
+    </script>
+
+</body>
+</html>
